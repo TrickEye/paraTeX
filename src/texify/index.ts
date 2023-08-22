@@ -3,8 +3,6 @@
 //
 // Works with marked and convert lexed tokens to tex source code.
 
-import {marked} from "marked";
-
 class TexBuf extends Array<string> {
     private _indent: number;
 
@@ -13,16 +11,30 @@ class TexBuf extends Array<string> {
         this._indent = 0;
     }
 
-    public addIndent(): void {
+    public addIndent() {
         this._indent++;
+        return this;
     }
 
-    public subIndent(): void {
+    public subIndent() {
         this._indent--;
+        return this;
+    }
+
+    public getIndent(): number {
+        return this._indent;
+    }
+
+    public setIndent(n: number) {
+        this._indent = n;
     }
 
     push(...items: string[]): number {
         return super.push(...items.map((item: string) => '\t'.repeat(this._indent) + item));
+    }
+
+    toString(): string {
+        return this.join('\n');
     }
 }
 
@@ -36,7 +48,7 @@ function translate(token: Object, texBuf: TexBuf, pkgSet: Set<string>): void {
 
 let grocery  = {
     space: function (token: Object, texBuf: TexBuf, pkgSet: Set<string>) {
-        texBuf.push('\n');
+        texBuf.push('');
     },
     code: function (token: Object, texBuf: TexBuf, pkgSet: Set<string>) {
         pkgSet.add('listings');
@@ -47,13 +59,14 @@ let grocery  = {
         const texElement = ['section', 'subsection', 'subsubsection', 'paragraph'];
         const elem = texElement[token["depth"] - 1 > 3 ? 3 : token["depth"] - 1];
 
-        texBuf.push('\\' + elem + '{');
-        texBuf.addIndent();
+        let tempBuf = new TexBuf()
         token["tokens"].forEach((token: Object) => {
-            translate(token, texBuf, pkgSet);
+            translate(token, tempBuf, pkgSet);
         });
-        texBuf.subIndent();
-        texBuf.push('}');
+        tempBuf[0] = '\\' + elem + '{' + tempBuf[0];
+        tempBuf[tempBuf.length - 1] += '}';
+
+        texBuf.push(...tempBuf);
     },
     table: function (token: Object, texBuf: TexBuf, pkgSet: Set<string>) {
         // todo
@@ -79,12 +92,14 @@ let grocery  = {
         texBuf.push(ordered ? '\\end{enumerate}' : '\\end{itemize}');
     },
     list_item: function (token: Object, texBuf: TexBuf, pkgSet: Set<string>) {
-        texBuf.push('\\item ');
-        texBuf.addIndent();
+        let tempBuf = new TexBuf();
         token["tokens"].forEach((token: Object) => {
-            translate(token, texBuf, pkgSet);
+            translate(token, tempBuf, pkgSet);
         });
-        texBuf.subIndent();
+        texBuf.push('\\item\t' + tempBuf[0]);
+        texBuf.addIndent()
+        texBuf.push(...tempBuf.slice(1))
+        texBuf.subIndent()
     },
     paragraph: function (token: Object, texBuf: TexBuf, pkgSet: Set<string>) {
         token["tokens"].forEach((token: Object) => {
@@ -136,22 +151,26 @@ let grocery  = {
         texBuf.push('\\end{figure}');
     },
     strong: function (token: Object, texBuf: TexBuf, pkgSet: Set<string>) {
-        texBuf.push('\\textbf{');
-        texBuf.addIndent();
+        let tempBuf = new TexBuf();
         token["tokens"].forEach((token: Object) => {
-            translate(token, texBuf, pkgSet);
+            translate(token, tempBuf, pkgSet);
         });
+        tempBuf[tempBuf.length - 1] += '}';
+        texBuf.push('\\textbf{' + tempBuf[0]);
+        texBuf.addIndent();
+        texBuf.push(...tempBuf.slice(1));
         texBuf.subIndent();
-        texBuf.push('}');
     },
     em: function (token: Object, texBuf: TexBuf, pkgSet: Set<string>) {
-        texBuf.push('\\emph{');
-        texBuf.addIndent();
+        let tempBuf = new TexBuf();
         token["tokens"].forEach((token: Object) => {
-            translate(token, texBuf, pkgSet);
+            translate(token, tempBuf, pkgSet);
         });
+        tempBuf[tempBuf.length - 1] += '}';
+        texBuf.push('\\emph{' + tempBuf[0]);
+        texBuf.addIndent();
+        texBuf.push(...tempBuf.slice(1));
         texBuf.subIndent();
-        texBuf.push('}');
     },
     codespan: function (token: Object, texBuf: TexBuf, pkgSet: Set<string>) {
         texBuf.push('\\texttt{' + token["text"] + '}');
@@ -166,14 +185,11 @@ let grocery  = {
 }
 
 export default function texify(tokens: Array<Object>): Array<string> {
-    let typeBuf: Array<string> = [];
     let texBuf: TexBuf = new TexBuf();
     let pkgBuf: Set<string> = new Set();
 
     tokens.forEach((token: Object) => {
-        typeBuf.push(token["type"]);
-
         translate(token, texBuf, pkgBuf);
     })
-    return [...typeBuf, ...texBuf, ...pkgBuf];
+    return [...texBuf];
 }
