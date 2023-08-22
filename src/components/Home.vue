@@ -7,7 +7,7 @@ export default {
   data() {
     return {
       darkTheme: darkTheme,
-      textInput: '# paraTeX, Write markdown, get LaTeX\n\n## Usage\n1. 在这里输入markdown源代码\n1. 点击paraTeX!\n1. 在右侧看到tex源码',
+      textInput: '',
       lexer: marked.lexer,
       output: ['no output']
     }
@@ -18,6 +18,14 @@ export default {
       console.log(texify(marked.lexer(this.textInput)))
       this.output = texify(marked.lexer(this.textInput))
     }
+  },
+  mounted() {
+    fetch('sample.md')
+      .then(response => response.text())
+      .then(data => {
+        this.textInput = data
+        this.clicked()
+      })
   }
 }
 

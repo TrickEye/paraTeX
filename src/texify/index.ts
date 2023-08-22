@@ -132,13 +132,13 @@ let grocery  = {
         texBuf.push('tag not implemented!');
     },
     link: function (token: Object, texBuf: TexBuf, pkgSet: Set<string>) {
-        texBuf.push('\\href{' + token["href"] + '}{');
-        texBuf.addIndent();
+        let tempBuf = new TexBuf();
         token["tokens"].forEach((token: Object) => {
-            translate(token, texBuf, pkgSet);
+            translate(token, tempBuf, pkgSet);
         });
-        texBuf.subIndent();
-        texBuf.push('}');
+        tempBuf[0] = '\\href{' + token["href"] + '}{' + tempBuf;
+        tempBuf[tempBuf.length - 1] += '}'
+        texBuf.push(...tempBuf)
     },
     image: function (token: Object, texBuf: TexBuf, pkgSet: Set<string>) {
         pkgSet.add('graphicx');
