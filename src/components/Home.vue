@@ -7,9 +7,9 @@ export default {
   data() {
     return {
       darkTheme: darkTheme,
-      textInput: '# hello\n\n## hello world!',
+      textInput: '# paraTeX, Write markdown, get LaTeX\n\n## Usage\n1. 在这里输入markdown源代码\n1. 点击paraTeX!\n1. 在右侧看到tex源码',
       lexer: marked.lexer,
-      output: 'no output'
+      output: ['no output']
     }
   },
   methods: {
@@ -38,7 +38,6 @@ export default {
       </n-grid-item>
       <n-grid-item span="2 m:1">
         <div class="gi">
-<!--          <div v-for="item in output"><span>{{ item }}</span></div>-->
           <n-code
             :code="output.join('\n')"
             show-line-numbers
