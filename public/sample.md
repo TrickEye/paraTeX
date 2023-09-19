@@ -1,5 +1,5 @@
 # paraTeX, Write markdown, get LaTeX
-[It's here](https://github.com/TrickEye/paraTeX)
+[It is here](https://github.com/TrickEye/paraTeX)
 - V 0.2: add sample markdown file, remove redundant newlines(WIP)
 - V 0.1: add usage tips, basic feature support (heading, list, inline), add azure deploy strategy
 

@@ -1,16 +1,26 @@
 <script>
-import { darkTheme } from 'naive-ui'
+import { NConfigProvider, NGrid, NGridItem, NCode } from 'naive-ui'
 import { marked } from 'marked';
 import texify from "../texify/index.ts";
+
+import hljs from 'highlight.js/lib/core';
+import latex from 'highlight.js/lib/languages/latex.js';
+hljs.registerLanguage('tex', latex);
 
 export default {
   data() {
     return {
-      darkTheme: darkTheme,
+      hljs: hljs,
       textInput: '',
       lexer: marked.lexer,
       output: ['no output']
     }
+  },
+  components: {
+    NConfigProvider,
+    NGrid,
+    NGridItem,
+    NCode
   },
   methods: {
     clicked() {
@@ -33,7 +43,7 @@ export default {
 
 <template>
   <h1 @click="clicked">ParaTeX</h1>
-  <n-config-provider :theme="darkTheme">
+  <n-config-provider :hljs="hljs">
     <n-grid cols="2" item-responsive responsive="screen">
       <n-grid-item span="2 m:1">
         <div class="gi">
@@ -45,10 +55,10 @@ export default {
         </div>
       </n-grid-item>
       <n-grid-item span="2 m:1">
-        <div class="gi">
+        <div class="gi right">
           <n-code
             :code="output.join('\n')"
-            show-line-numbers
+            languages="tex"
           ></n-code>
         </div>
       </n-grid-item>
@@ -76,5 +86,10 @@ h1:hover {
   padding-left: 10px;
   padding-right: 10px;
   text-align: left;
+  /* border: black solid 1px; */
+}
+
+.gi.right {
+  margin-left: 10px;
 }
 </style>
